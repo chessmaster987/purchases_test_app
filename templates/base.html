@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Мої покупки</title>
+</head>
+<body>
+    <h1>Мої покупки</h1>
+    <nav>
+        <a href="{{ url_for('index') }}">Головна</a> |
+        <a href="{{ url_for('add') }}">Ввести дані</a> |
+        <a href="{{ url_for('stats') }}">Статистика</a>
+    </nav>
+    <hr>
+    {% block content %}{% endblock %}
+</body>
+</html>

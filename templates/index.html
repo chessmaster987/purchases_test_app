@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<p>Оберіть дію:</p>
+<ul>
+    <li><a href="{{ url_for('add') }}">Ввести дані</a></li>
+    <li><a href="{{ url_for('stats') }}">Переглянути статистику</a></li>
+</ul>
+{% endblock %}
