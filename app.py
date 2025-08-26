@@ -1,3 +1,5 @@
+import cloudinary
+import cloudinary.uploader
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 import os
@@ -11,6 +13,13 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
 db = SQLAlchemy(app)
+
+# Налаштування Cloudinary (використовуємо ENV-перемінні у Render)
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET")
+)
 
 # Модель бази
 class Purchase(db.Model):
@@ -33,20 +42,18 @@ def add():
         shop = request.form['shop']
         amount = float(request.form['amount'])
 
-        # Фото
         file = request.files['receipt']
-        filename = None
+        receipt_url = None
         if file:
-            filename = datetime.now().strftime("%Y%m%d%H%M%S") + "_" + file.filename
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
+            upload_result = cloudinary.uploader.upload(file)
+            receipt_url = upload_result['secure_url']
 
         # Збереження в БД
         purchase = Purchase(
             date=datetime.strptime(date_str, '%Y-%m-%d'),
             shop=shop,
             amount=amount,
-            receipt=filename
+            receipt=receipt_url
         )
         db.session.add(purchase)
         db.session.commit()

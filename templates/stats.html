@@ -15,7 +15,7 @@
 {% for p in purchases %}
     <li>{{ p.date }} | {{ p.shop }} | {{ p.amount }} грн 
         {% if p.receipt %}
-        <br><img src="{{ url_for('static', filename='uploads/' + p.receipt) }}" width="150">
+            <br><img src="{{ p.receipt }}" width="150">
         {% endif %}
     </li>
 {% endfor %}
