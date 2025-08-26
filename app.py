@@ -16,9 +16,10 @@ db = SQLAlchemy(app)
 
 # Налаштування Cloudinary (використовуємо ENV-перемінні у Render)
 cloudinary.config(
-    cloud_name=os.getenv("dtwudcxoy"),
-    api_key=os.getenv("423823595285374"),
-    api_secret=os.getenv("u-83Xjf2D4CnwZ3DCgt6eieGkpc")
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+    secure=True
 )
 
 # Модель бази
