@@ -1,12 +1,45 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Додати покупку</h2>
-<form method="POST" enctype="multipart/form-data">
-    <label>Дата: <input type="date" name="date_of_purchase" required></label><br>
-    <label>Магазин: <input type="text" name="market_name" required></label><br>
-    <label>Опис покупки: <input type="text" name="purchase_description" required></label><br>
-    <label>Сума: <input type="number" step="0.01" name="amount" required></label><br>
-    <!--<label>Чек (фото): <input type="file" name="receipt"></label><br><br>-->
-    <button type="submit">Зберегти</button>
-</form>
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow-lg rounded-3">
+        <div class="card-body p-4">
+          <h2 class="text-center mb-4">Додати покупку</h2>
+
+          <form method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label for="date" class="form-label">Дата</label>
+              <input type="date" class="form-control" id="date" name="date_of_purchase" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="market" class="form-label">Магазин</label>
+              <input type="text" class="form-control" id="market" name="market_name" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="desc" class="form-label">Опис покупки</label>
+              <input type="text" class="form-control" id="desc" name="purchase_description" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="amount" class="form-label">Сума</label>
+              <input type="number" step="0.01" class="form-control" id="amount" name="amount" required>
+            </div>
+
+            <!--
+            <div class="mb-3">
+              <label for="receipt" class="form-label">Чек (фото)</label>
+              <input type="file" class="form-control" id="receipt" name="receipt">
+            </div>
+            -->
+
+            <button type="submit" class="btn btn-primary w-100">Зберегти</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

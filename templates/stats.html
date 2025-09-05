@@ -1,23 +1,40 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Статистика</h2>
-<p>Загальна сума: {{ total }} грн</p>
+<h2 class="mb-4">Статистика</h2>
 
-<h3>По магазинах:</h3>
-<ul>
-{% for shop, sum in shops.items() %}
-    <li>{{ shop }}: {{ sum }} грн</li>
-{% endfor %}
-</ul>
+<div class="card p-3 mb-4">
+    <h4>Загальна сума: <span class="text-success">{{ total }} zł</span></h4>
+</div>
 
-<h3>Останні покупки:</h3>
-<ul>
-{% for p in purchases %}
-    <li>{{ p.date }} | {{ p.shop }} | {{ p.amount }} грн 
-        {% if p.receipt %}
-            <br><img src="{{ p.receipt }}" width="150">
-        {% endif %}
-    </li>
-{% endfor %}
-</ul>
+<div class="row">
+    <div class="col-md-6">
+        <h5>По магазинах:</h5>
+        <ul class="list-group mb-4">
+        {% for shop, sum in shops.items() %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ shop }}
+                <span class="badge bg-primary rounded-pill">{{ sum }} zł</span>
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
+
+    <div class="col-md-6">
+        <h5>Останні покупки:</h5>
+        <ul class="list-group">
+        {% for p in purchases %}
+            <li class="list-group-item">
+                <strong>{{ p.date }}</strong> |
+                <span class="text-muted">{{ p.shop }}</span> |
+                <span class="fw-bold">{{ p.amount }} zł</span>
+                <br>
+                <small>{{ p.desc }}</small>
+                {% if p.receipt %}
+                    <br><img src="{{ p.receipt }}" class="img-fluid mt-2" style="max-width:150px;">
+                {% endif %}
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
+</div>
 {% endblock %}

@@ -6,10 +6,10 @@ from datetime import datetime
 import psycopg2  # pip install psycopg2
 import psycopg2.extras
 
-#from dotenv import load_dotenv
+from dotenv import load_dotenv
 
 # Завантажуємо змінні з .env
-#load_dotenv()
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = "nasa"
@@ -77,15 +77,39 @@ def add():
 # Статистика
 @app.route('/stats')
 def stats():
-    #purchases = Purchase.query.all()
-    
-    # сума по магазинах
-    """
+    conn = psycopg2.connect(DATABASE_URL)
+    purchases = []
     shops = {}
-    for p in purchases:
-        shops[p.shop] = shops.get(p.shop, 0) + p.amount
+    total = 0
 
-    return render_template('stats.html', purchases=purchases, total=total, shops=shops)"""
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+            # Всі покупки
+            cur.execute("SELECT id_purchase, date_of_purchase, market_name, purchase_description, suma FROM enter_purchase ORDER BY date_of_purchase DESC LIMIT 20")
+            rows = cur.fetchall()
+
+            for row in rows:
+                purchases.append({
+                    "id": row["id_purchase"],
+                    "date": row["date_of_purchase"].strftime("%d-%m-%Y"),
+                    "shop": row["market_name"],
+                    "desc": row["purchase_description"],
+                    "amount": float(row["suma"]),
+                    #"receipt": None -- if Cloudinary
+                })
+
+                # Загальна сума
+                total += float(row["suma"])
+
+                # По магазинах
+                shop = row["market_name"]
+                shops[shop] = shops.get(shop, 0) + float(row["suma"])
+
+    except psycopg2.Error as e:
+        return f"Помилка при отриманні статистики: {e}"
+
+    return render_template("stats.html", purchases=purchases, total=total, shops=shops)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
