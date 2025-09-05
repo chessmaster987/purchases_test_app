@@ -1,34 +1,35 @@
-import cloudinary
-import cloudinary.uploader
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 import os
 from datetime import datetime
 
+import psycopg2  # pip install psycopg2
+import psycopg2.extras
+
 app = Flask(__name__)
-
-# Конфіг
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///purchases.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['UPLOAD_FOLDER'] = 'static/uploads'
-
-db = SQLAlchemy(app)
+app.secret_key = "nasa"
 
 # Налаштування Cloudinary (використовуємо ENV-перемінні у Render)
-cloudinary.config(
-    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
-    api_key=os.getenv("CLOUDINARY_API_KEY"),
-    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
-    secure=True
-)
+#cloudinary.config(
+#    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+#    api_key=os.getenv("CLOUDINARY_API_KEY"),
+#    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+#    secure=True
+#)
 
-# Модель бази
-class Purchase(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.Date, nullable=False)
-    shop = db.Column(db.String(100), nullable=False)
-    amount = db.Column(db.Float, nullable=False)
-    receipt = db.Column(db.String(200))  # шлях до файлу
+# =======================
+# Підключення до Neon через змінну середовища
+# =======================
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise ValueError("Не встановлено змінну середовища DATABASE_URL")
+
+try:
+    conn = psycopg2.connect(DATABASE_URL)
+    print("Успішно підключено до бази даних!")
+except psycopg2.Error as e:
+    print("Не вдалось підключитися до бази даних:", e)
+    conn = None  # conn = None, щоб не падало
 
 # Головна
 @app.route('/')
@@ -38,44 +39,47 @@ def index():
 # Додавання покупки
 @app.route('/add', methods=['GET', 'POST'])
 def add():
-    if request.method == 'POST':
-        date_str = request.form['date']
-        shop = request.form['shop']
-        amount = float(request.form['amount'])
+    if not conn:
+        return "Помилка: база даних недоступна"
 
+    if request.method == 'POST':
+        date = request.form['date_of_purchase']
+        m_name = request.form['market_name']
+        p_desc = request.form['purchase_description']
+        suma = request.form['amount']
+
+        try:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                cur.execute(
+                    "INSERT INTO enter_purchase (date_of_purchase, market_name, purchase_description, suma) VALUES (%s,%s,%s,%s)", (date, m_name, p_desc, suma)
+                )
+                conn.commit()
+        except psycopg2.Error as e:
+            conn.rollback()
+            return f"Помилка при додаванні покупки: {e}"
+
+        """
         file = request.files['receipt']
         receipt_url = None
         if file:
             upload_result = cloudinary.uploader.upload(file)
             receipt_url = upload_result['secure_url']
-
-        # Збереження в БД
-        purchase = Purchase(
-            date=datetime.strptime(date_str, '%Y-%m-%d'),
-            shop=shop,
-            amount=amount,
-            receipt=receipt_url
-        )
-        db.session.add(purchase)
-        db.session.commit()
-        return redirect(url_for('index'))
+            """
 
     return render_template('add.html')
 
 # Статистика
 @app.route('/stats')
 def stats():
-    purchases = Purchase.query.all()
-    total = sum(p.amount for p in purchases)
+    #purchases = Purchase.query.all()
     
     # сума по магазинах
+    """
     shops = {}
     for p in purchases:
         shops[p.shop] = shops.get(p.shop, 0) + p.amount
 
-    return render_template('stats.html', purchases=purchases, total=total, shops=shops)
+    return render_template('stats.html', purchases=purchases, total=total, shops=shops)"""
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
     app.run(debug=True)
