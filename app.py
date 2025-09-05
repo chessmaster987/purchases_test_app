@@ -6,6 +6,11 @@ from datetime import datetime
 import psycopg2  # pip install psycopg2
 import psycopg2.extras
 
+from dotenv import load_dotenv
+
+# Завантажуємо змінні з .env
+load_dotenv()
+
 app = Flask(__name__)
 app.secret_key = "nasa"
 
@@ -39,6 +44,7 @@ def index():
 # Додавання покупки
 @app.route('/add', methods=['GET', 'POST'])
 def add():
+    conn = psycopg2.connect(DATABASE_URL)
     if not conn:
         return "Помилка: база даних недоступна"
 
