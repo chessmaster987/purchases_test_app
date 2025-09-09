@@ -1,22 +1,118 @@
 <!doctype html>
-<html>
+<html lang="uk">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    <style>
+        /* Загальні стилі */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #6B73FF 0%, #000DFF 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #fff;
+        }
+
+        /* Контейнер форми */
+        .login-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px 60px;
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            text-align: center;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        h2 {
+            margin-bottom: 30px;
+            font-size: 28px;
+            letter-spacing: 1px;
+            animation: slideDown 1s ease forwards;
+        }
+
+        /* Повідомлення про помилки */
+        .flash-message {
+            margin-bottom: 20px;
+            color: #ff4d4d;
+            font-weight: bold;
+            animation: shake 0.5s;
+        }
+
+        /* Поля вводу */
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 10px 0 20px 0;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="password"]:focus {
+            outline: none;
+            box-shadow: 0 0 10px #00ffe7;
+            transform: scale(1.05);
+        }
+
+        /* Кнопка */
+        button {
+            background: #00ffe7;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            color: #000;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #00c8b3;
+            transform: scale(1.1);
+        }
+
+        /* Анімації */
+        @keyframes fadeIn {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+
+        @keyframes slideDown {
+            from {transform: translateY(-20px); opacity: 0;}
+            to {transform: translateY(0); opacity: 1;}
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+    </style>
 </head>
 <body>
-    <h2>Введіть пароль</h2>
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <ul>
-        {% for message in messages %}
-          <li style="color:red;">{{ message }}</li>
-        {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
-    <form method="POST">
-        <input type="password" name="password" placeholder="Пароль">
-        <button type="submit">Увійти</button>
-    </form>
+    <div class="login-container">
+        <h2>Введіть пароль</h2>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <div class="flash-message">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        <form method="POST">
+            <input type="password" name="password" placeholder="Пароль" required>
+            <button type="submit">Увійти</button>
+        </form>
+    </div>
 </body>
 </html>

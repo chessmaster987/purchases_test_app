@@ -13,9 +13,46 @@
             background-color: #f8f9fa;
             font-family: "Segoe UI", sans-serif;
         }
+
         nav a {
             margin: 0 10px;
             text-decoration: none;
+        }
+
+        /* Кастомна кнопка Logout */
+        .logout-btn {
+            color: #fff;
+            background-color: #e74c3c; /* гарячий червоний */
+            border-radius: 8px;
+            padding: 6px 15px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            border: none;
+            animation: pulse 2s infinite;
+        }
+
+        .logout-btn:hover {
+            background-color: #c0392b; /* темніший червоний при наведенні */
+            color: #fff; /* текст залишається білим */
+            transform: scale(1.1);
+            text-decoration: none;
+            animation: none; /* зупиняємо пульсацію при ховері */
+        }
+
+        /* Пульсація кнопки */
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 rgba(231, 76, 60, 0.7); }
+            50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(231, 76, 60, 0.7); }
+            100% { transform: scale(1); box-shadow: 0 0 0 rgba(231, 76, 60, 0.7); }
+        }
+
+        /* Інші посилання навігації */
+        .navbar-nav .nav-link {
+            transition: color 0.3s ease;
+        }
+
+        .navbar-nav .nav-link:hover:not(.logout-btn) {
+            color: #00ffe7; /* ефект наведення для інших посилань */
         }
     </style>
 </head>
@@ -37,6 +74,9 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('stats') }}">Статистика</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link logout-btn ms-2" href="{{ url_for('logout') }}">Вихід</a>
                     </li>
                 </ul>
             </div>

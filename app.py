@@ -28,7 +28,7 @@ cloudinary.config(
 # =======================
 # Підключення до Neon через змінну середовища
 # =======================
-DATABASE_URL = os.getenv("DATABASE_URL_TEST")
+DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise ValueError("Не встановлено змінну середовища DATABASE_URL")
 
@@ -42,7 +42,7 @@ except psycopg2.Error as e:
     conn = None  # conn = None, щоб не падало
 
 # ===== Авторизація =====####################################################
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         password = request.form.get('password')
@@ -63,13 +63,14 @@ def login_required(f):
     return decorated_function
                                                                 ##################################################
 # Головна
-@app.route('/')
+@app.route('/hello')
 @login_required                                 #####################
 def index():
     return render_template('index.html')
 
 # Додавання покупки
 @app.route('/add', methods=['GET', 'POST'])
+@login_required  
 def add():
     conn = psycopg2.connect(DATABASE_URL)
     if not conn:
@@ -110,6 +111,7 @@ def add():
 
 # Додавання магазинів
 @app.route('/markets', methods=['GET', 'POST'])
+@login_required  
 def markets():
     conn = psycopg2.connect(DATABASE_URL)
     if not conn:
@@ -145,6 +147,7 @@ def markets():
 
 # Статистика
 @app.route('/stats')
+@login_required  
 def stats():
     conn = psycopg2.connect(DATABASE_URL)
     purchases = []
