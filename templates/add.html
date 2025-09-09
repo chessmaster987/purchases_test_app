@@ -13,9 +13,33 @@
               <input type="date" class="form-control" id="date" name="date_of_purchase" required>
             </div>
 
+            <!-- Кастомний випадаючий список -->
             <div class="mb-3">
-              <label for="market" class="form-label">Магазин</label>
-              <input type="text" class="form-control" id="market" name="market_name" required>
+              <label class="form-label">Магазин</label>
+              <div class="dropdown w-100">
+                <button class="btn btn-outline-secondary w-100 d-flex justify-content-between align-items-center"
+                        type="button" id="marketDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                  <span id="selectedMarketText">Оберіть магазин</span>
+                  <i class="bi bi-chevron-down"></i>
+                </button>
+                <ul class="dropdown-menu w-100" aria-labelledby="marketDropdown"
+                  aria-labelledby="marketDropdown"
+                  style="max-height: 200px; overflow-y: auto;">
+                  {% for m in markets %}
+                  <li>
+                    <a class="dropdown-item d-flex align-items-center market-option"
+                       href="#"
+                       data-id="{{ m.id_market }}"
+                       data-name="{{ m.name_of_market }}">
+                      <img src="{{ m.logo_market }}" alt="{{ m.name_of_market }}" class="me-2" style="width: 24px; height: 24px; object-fit: cover;">
+                      {{ m.name_of_market }}
+                    </a>
+                  </li>
+                  {% endfor %}
+                </ul>
+              </div>
+              <!-- приховане поле для відправки id -->
+              <input type="hidden" id="market_id" name="market_id" required>
             </div>
 
             <div class="mb-3">
@@ -28,13 +52,6 @@
               <input type="number" step="0.01" class="form-control" id="amount" name="amount" required>
             </div>
 
-            <!--
-            <div class="mb-3">
-              <label for="receipt" class="form-label">Чек (фото)</label>
-              <input type="file" class="form-control" id="receipt" name="receipt">
-            </div>
-            -->
-
             <button type="submit" class="btn btn-primary w-100">Зберегти</button>
           </form>
         </div>
@@ -42,4 +59,22 @@
     </div>
   </div>
 </div>
+
+<!-- JS для вибору магазину -->
+<script>
+  document.querySelectorAll('.market-option').forEach(item => {
+    item.addEventListener('click', function(e) {
+      e.preventDefault();
+      const marketId = this.dataset.id;
+      const marketName = this.dataset.name;
+      const marketImg = this.querySelector('img').outerHTML;
+
+      // Змінюємо текст у кнопці
+      document.getElementById('selectedMarketText').innerHTML = marketImg + " " + marketName;
+
+      // Записуємо id у приховане поле
+      document.getElementById('market_id').value = marketId;
+    });
+  });
+</script>
 {% endblock %}
