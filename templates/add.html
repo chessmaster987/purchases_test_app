@@ -23,7 +23,6 @@
                   <i class="bi bi-chevron-down"></i>
                 </button>
                 <ul class="dropdown-menu w-100" aria-labelledby="marketDropdown"
-                  aria-labelledby="marketDropdown"
                   style="max-height: 200px; overflow-y: auto;">
                   {% for m in markets %}
                   <li>
@@ -42,9 +41,17 @@
               <input type="hidden" id="market_id" name="market_id" required>
             </div>
 
+            <!-- Опис покупки з бульбашками -->
             <div class="mb-3">
               <label for="desc" class="form-label">Опис покупки</label>
-              <input type="text" class="form-control" id="desc" name="purchase_description" required>
+              <div id="productBubbles" class="d-flex flex-wrap gap-2 mb-2"></div>
+              
+              <!-- приховане поле, де буде весь рядок -->
+              <input type="hidden" id="desc" name="purchase_description" required>
+
+              <button type="button" class="btn btn-outline-primary btn-sm" id="addProductBtn">
+                Додати продукт
+              </button>
             </div>
 
             <div class="mb-3">
@@ -60,8 +67,37 @@
   </div>
 </div>
 
-<!-- JS для вибору магазину -->
+<!-- Модальне вікно для додавання продукту -->
+<div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Додати продукт</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="text" id="prodName" class="form-control mb-2" placeholder="Назва продукту">
+
+        <!-- Категорія як select -->
+        <select id="prodCategory" class="form-select mb-2">
+          <option value="">Оберіть категорію</option>
+          {% for c in categories %}
+            <option>{{ c.name_category }}</option>
+          {% endfor %}
+        </select>
+
+        <input type="text" id="prodPrice" class="form-control" placeholder="Ціна (наприклад 3.50)">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+        <button type="button" class="btn btn-primary" id="saveProductBtn">Ок</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
+  // Вибір магазину
   document.querySelectorAll('.market-option').forEach(item => {
     item.addEventListener('click', function(e) {
       e.preventDefault();
@@ -69,12 +105,51 @@
       const marketName = this.dataset.name;
       const marketImg = this.querySelector('img').outerHTML;
 
-      // Змінюємо текст у кнопці
       document.getElementById('selectedMarketText').innerHTML = marketImg + " " + marketName;
-
-      // Записуємо id у приховане поле
       document.getElementById('market_id').value = marketId;
     });
+  });
+
+  // Логіка бульбашок
+  const products = [];
+  const descInput = document.getElementById("desc");
+  const bubbles = document.getElementById("productBubbles");
+
+  document.getElementById("addProductBtn").addEventListener("click", () => {
+    const modal = new bootstrap.Modal(document.getElementById("productModal"));
+    modal.show();
+  });
+
+  document.getElementById("saveProductBtn").addEventListener("click", () => {
+    const name = document.getElementById("prodName").value.trim();
+    const category = document.getElementById("prodCategory").value.trim();
+    const price = document.getElementById("prodPrice").value.trim();
+
+    if (name && category && price) {
+      const text = `${name} (${category}) – ${price} zł`;
+      products.push(text);
+
+      const bubble = document.createElement("span");
+      bubble.className = "badge bg-secondary p-2";
+      bubble.innerHTML = `${text} <span style="cursor:pointer;" class="ms-2">&times;</span>`;
+
+      bubble.querySelector("span").addEventListener("click", () => {
+        bubbles.removeChild(bubble);
+        const idx = products.indexOf(text);
+        if (idx > -1) products.splice(idx, 1);
+        descInput.value = products.join("; ");
+      });
+
+      bubbles.appendChild(bubble);
+      descInput.value = products.join("; ");
+
+      document.getElementById("prodName").value = "";
+      document.getElementById("prodCategory").value = "";
+      document.getElementById("prodPrice").value = "";
+
+      const modal = bootstrap.Modal.getInstance(document.getElementById("productModal"));
+      modal.hide();
+    }
   });
 </script>
 {% endblock %}

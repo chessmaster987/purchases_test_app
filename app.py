@@ -11,6 +11,9 @@ from dotenv import load_dotenv
 import cloudinary
 import cloudinary.uploader
 
+import re
+from collections import defaultdict
+
 # Завантажуємо змінні з .env
 load_dotenv()
 
@@ -107,7 +110,13 @@ def add():
         cur.execute("SELECT id_market, name_of_market, logo_market FROM Markets")
         markets = cur.fetchall()
 
-    return render_template('add.html', markets=markets)
+    # --- дістаємо категорії для select ---
+    categories = []
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute("SELECT id_category, name_category FROM Category")
+        categories = cur.fetchall()
+
+    return render_template('add.html', markets=markets, categories=categories)
 
 # Додавання магазинів
 @app.route('/markets', methods=['GET', 'POST'])
@@ -145,7 +154,37 @@ def markets():
     conn.close()
     return render_template('markets.html', markets=markets_data)
 
-# Статистика
+def parse_purchase_line(line):
+    """
+    Розбирає рядок з бульбашками у вигляді:
+    Mleko (Кисломолочні) – 3,15 zł; Schab (М'ясо) – 9,99 zł
+    і повертає список словників з ключами name, category, amount
+    """
+    items = []
+    # Розділяємо по крапка з комою
+    parts = line.split(';')
+    for part in parts:
+        part = part.strip()
+        if not part:
+            continue
+        # Регекс: назва (категорія) – сума
+        m = re.match(r'^(.*?)\s*\((.*?)\)\s*–\s*([\d,]+)\s*zł$', part)
+        if m:
+            name = m.group(1).strip()
+            category = m.group(2).strip()
+            amount_str = m.group(3).replace(',', '.')  # замінюємо кому на крапку
+            try:
+                amount = float(amount_str)
+            except:
+                amount = 0
+            items.append({
+                "name": name,
+                "category": category,
+                "amount": amount
+            })
+    return items
+
+# ===== Статистика =====
 @app.route('/stats')
 @login_required  
 def stats():
@@ -153,15 +192,14 @@ def stats():
     purchases = []
     shops = {}
     total = 0
+    categories_sum = defaultdict(float)
 
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
-            # Всі покупки
             cur.execute("""SELECT id_purchase, date_of_purchase, markets.name_of_market, purchase_description, suma
-                        FROM enter_purchase
-                        INNER JOIN markets on enter_purchase.market_id = markets.id_market
-                        ORDER BY date_of_purchase DESC
-                        LIMIT 20""")
+                           FROM enter_purchase
+                           INNER JOIN markets on enter_purchase.market_id = markets.id_market
+                           ORDER BY date_of_purchase DESC""")
             rows = cur.fetchall()
 
             for row in rows:
@@ -171,7 +209,6 @@ def stats():
                     "shop": row["name_of_market"],
                     "desc": row["purchase_description"],
                     "amount": float(row["suma"]),
-                    #"receipt": None -- if Cloudinary
                 })
 
                 # Загальна сума
@@ -181,10 +218,23 @@ def stats():
                 shop = row["name_of_market"]
                 shops[shop] = shops.get(shop, 0) + float(row["suma"])
 
+                # Розбір покупки по товарах
+                items = parse_purchase_line(row["purchase_description"])
+                for item in items:
+                    cat = item["category"]
+                    if cat in categories_sum:
+                        categories_sum[cat] += item["amount"]
+                    else:
+                        categories_sum[cat] = item["amount"]  # нова категорія, якщо такої ще немає
+
     except psycopg2.Error as e:
         return f"Помилка при отриманні статистики: {e}"
 
-    return render_template("stats.html", purchases=purchases, total=total, shops=shops)
+    return render_template("stats.html",
+                           purchases=purchases,
+                           total=total,
+                           shops=shops,
+                           categories_sum=dict(categories_sum))
 
 ##
 ####

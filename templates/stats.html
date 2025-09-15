@@ -13,8 +13,20 @@
         {% for shop, sum in shops.items() %}
             <li class="list-group-item d-flex justify-content-between align-items-center">
                 {{ shop }}
-                <span class="badge bg-primary rounded-pill">{{ sum }} zł</span>
+                <span class="badge bg-primary rounded-pill">{{ "%.2f"|format(sum) }} zł</span>
             </li>
+        {% endfor %}
+        </ul>
+
+        <h5>По категоріях:</h5>
+        <ul class="list-group mb-4">
+        {% for cat, sum in categories_sum|dictsort(false, by='value') %}
+            {% if sum > 0 %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ cat }}
+                <span class="badge bg-warning text-dark rounded-pill">{{ "%.2f"|format(sum) }} zł</span>
+            </li>
+            {% endif %}
         {% endfor %}
         </ul>
     </div>
@@ -26,7 +38,7 @@
             <li class="list-group-item">
                 <strong>{{ p.date }}</strong> |
                 <span class="text-muted">{{ p.shop }}</span> |
-                <span class="fw-bold">{{ p.amount }} zł</span>
+                <span class="fw-bold">{{ "%.2f"|format(p.amount) }} zł</span>
                 <br>
                 <small>{{ p.desc }}</small>
                 {% if p.receipt %}
